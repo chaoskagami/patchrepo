@@ -1,0 +1,23 @@
+This patch fixes building wget against libressl.
+It isn't actually that hard, really...
+
+We remove the RAND_status call because doing it twice
+in a row is redundant.
+
+diff -ur a/src/openssl.c b/src/openssl.c
+--- a/src/openssl.c	2014-10-27 04:15:33.000000000 -0400
++++ b/src/openssl.c	2015-09-20 17:14:50.616006063 -0400
+@@ -89,13 +89,6 @@
+   if (RAND_status ())
+     return;
+ 
+-  /* Get random data from EGD if opt.egd_file was used.  */
+-  if (opt.egd_file && *opt.egd_file)
+-    RAND_egd (opt.egd_file);
+-
+-  if (RAND_status ())
+-    return;
+-
+ #ifdef WINDOWS
+   /* Under Windows, we can try to seed the PRNG using screen content.
+      This may or may not work, depending on whether we'll calling Wget

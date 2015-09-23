@@ -1,0 +1,47 @@
+Backwards compatibility patch for libvpx 1.3.0.
+Why they broke it - dunno. This resolves palemoon builds
+against a system libvpx 1.4.0.
+
+Also, remember to specify --size-limit=16384x16384 when
+configuring to avoid CVE-2015-1258.
+
+This can actually be applied to the system header without
+breaking compatibility ABI or API, if you care.
+
+--- a/vpx/vpx_image.h	2015-09-10 18:56:56.745789978 -0400
++++ b/vpx/vpx_image.h	2015-06-25 15:04:01.033448569 -0400
+@@ -66,6 +66,34 @@
+     VPX_IMG_FMT_I44016    = VPX_IMG_FMT_I440 | VPX_IMG_FMT_HIGHBITDEPTH
+   } vpx_img_fmt_t; /**< alias for enum vpx_img_fmt */
+ 
++#define IMG_FMT_NONE VPX_IMG_FMT_NONE
++#define IMG_FMT_RGB24 VPX_IMG_FMT_RGB24
++#define IMG_FMT_RGB32 VPX_IMG_FMT_RGB32
++#define IMG_FMT_RGB565 VPX_IMG_FMT_RGB565
++#define IMG_FMT_RGB555 VPX_IMG_FMT_RGB555
++#define IMG_FMT_UYVY VPX_IMG_FMT_UYVY
++#define IMG_FMT_YUY2 VPX_IMG_FMT_YUY2
++#define IMG_FMT_YVYU VPX_IMG_FMT_YVYU
++#define IMG_FMT_BGR24 VPX_IMG_FMT_BGR24
++#define IMG_FMT_RGB32_LE VPX_IMG_FMT_RGB32_LE
++#define IMG_FMT_ARGB VPX_IMG_FMT_ARGB
++#define IMG_FMT_ARGB_LE VPX_IMG_FMT_ARGB_LE
++#define IMG_FMT_RGB565_LE VPX_IMG_FMT_RGB565_LE
++#define IMG_FMT_RGB555_LE VPX_IMG_FMT_RGB555_LE
++#define IMG_FMT_YV12 VPX_IMG_FMT_YV12
++#define IMG_FMT_I420 VPX_IMG_FMT_I420
++#define IMG_FMT_VPXYV12 VPX_IMG_FMT_VPXYV12
++#define IMG_FMT_VPXI420 VPX_IMG_FMT_VPXI420
++#define IMG_FMT_I422 VPX_IMG_FMT_I422
++#define IMG_FMT_I444 VPX_IMG_FMT_I444
++#define IMG_FMT_I440 VPX_IMG_FMT_I440
++#define IMG_FMT_444A VPX_IMG_FMT_444A
++#define IMG_FMT_I42016 VPX_IMG_FMT_I42016
++#define IMG_FMT_I42216 VPX_IMG_FMT_I42216
++#define IMG_FMT_I44416 VPX_IMG_FMT_I44416
++#define IMG_FMT_I44016 VPX_IMG_FMT_I44016
++
++
+   /*!\brief List of supported color spaces */
+   typedef enum vpx_color_space {
+     VPX_CS_UNKNOWN    = 0,  /**< Unknown */

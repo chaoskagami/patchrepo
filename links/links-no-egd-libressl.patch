@@ -1,0 +1,20 @@
+Disables use of EGD in the links text browser.
+
+diff -ur links-2.9/https.c b/https.c
+--- links-2.9/https.c	2013-09-20 17:17:00.000000000 -0400
++++ b/https.c	2015-09-21 05:49:16.768082372 -0400
+@@ -36,11 +36,9 @@
+ 		unsigned os_pool_size;
+ 
+ 		const unsigned char *f = (const unsigned char *)RAND_file_name(cast_char f_randfile, sizeof(f_randfile));
+-		if (f && RAND_egd(cast_const_char f) < 0) {
+-			/* Not an EGD, so read and write to it */
+-			if (RAND_load_file(cast_const_char f_randfile, -1))
+-				RAND_write_file(cast_const_char f_randfile);
+-		}
++		/* Not an EGD, so read and write to it */
++		if (RAND_load_file(cast_const_char f_randfile, -1))
++			RAND_write_file(cast_const_char f_randfile);
+ 
+ 		os_seed_random(&os_pool, &os_pool_size);
+ 		if (os_pool_size) RAND_add(os_pool, os_pool_size, os_pool_size);
