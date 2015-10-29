@@ -1,0 +1,84 @@
+When building qt with unsupported configs, a lot goes wrong.
+This corrects a few issues with compilations; ABI is obviously 
+incompatible after doing all this.
+
+1) LibreSSL fixes.
+2) Building without Accessibility support - not well tested, fixes.
+3) Building without dbus causes code to go missing. Corrected refs.
+4) Still can't build QtWebCore, so you'll need to skip it.
+=====================================================================
+diff -ur qt-everywhere-opensource-src-5.5.0/qtbase/src/network/ssl/qsslcontext_openssl.cpp qt-everywhere-opensource-src-5.5.0-b/qtbase/src/network/ssl/qsslcontext_openssl.cpp
+--- qt-everywhere-opensource-src-5.5.0/qtbase/src/network/ssl/qsslcontext_openssl.cpp	2015-06-29 16:04:46.000000000 -0400
++++ qt-everywhere-opensource-src-5.5.0-b/qtbase/src/network/ssl/qsslcontext_openssl.cpp	2015-09-23 05:05:57.807355278 -0400
+@@ -338,7 +338,7 @@
+ 
+     const QVector<QSslEllipticCurve> qcurves = sslContext->sslConfiguration.ellipticCurves();
+     if (!qcurves.isEmpty()) {
+-#if OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_EC)
++#if OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_EC) && defined(SSL_CTRL_SET_CURVES)
+         // Set the curves to be used
+         if (q_SSLeay() >= 0x10002000L) {
+             // SSL_CTX_ctrl wants a non-const pointer as last argument,
+diff -ur qt-everywhere-opensource-src-5.5.0/qtbase/src/network/ssl/qsslellipticcurve_openssl.cpp qt-everywhere-opensource-src-5.5.0-b/qtbase/src/network/ssl/qsslellipticcurve_openssl.cpp
+--- qt-everywhere-opensource-src-5.5.0/qtbase/src/network/ssl/qsslellipticcurve_openssl.cpp	2015-06-29 16:04:46.000000000 -0400
++++ qt-everywhere-opensource-src-5.5.0-b/qtbase/src/network/ssl/qsslellipticcurve_openssl.cpp	2015-09-23 05:09:12.446360079 -0400
+@@ -76,10 +76,9 @@
+ 
+     int nid = q_OBJ_sn2nid(curveNameLatin1.data());
+ 
+-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+-    if (nid == 0 && q_SSLeay() >= 0x10002000L)
++    if (q_EC_curve_nist2nid && nid == 0) {
+         nid = q_EC_curve_nist2nid(curveNameLatin1.data());
+-#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L
++    }
+ 
+     result.id = nid;
+ #endif
+diff -ur qt-everywhere-opensource-src-5.5.0/qtbase/src/widgets/styles/qgtkstyle.cpp qt-everywhere-opensource-src-5.5.0-b/qtbase/src/widgets/styles/qgtkstyle.cpp
+--- qt-everywhere-opensource-src-5.5.0/qtbase/src/widgets/styles/qgtkstyle.cpp	2015-06-29 16:04:06.000000000 -0400
++++ qt-everywhere-opensource-src-5.5.0-b/qtbase/src/widgets/styles/qgtkstyle.cpp	2015-09-23 05:27:51.010387674 -0400
+@@ -3633,13 +3633,6 @@
+                 QFont font = widget->font();
+                 font.setBold(true);
+                 fontMetrics = QFontMetrics(font);
+-            } else if (QStyleHelper::isInstanceOf(groupBox->styleObject, QAccessible::Grouping)) {
+-                QVariant var = groupBox->styleObject->property("font");
+-                if (var.isValid() && var.canConvert<QFont>()) {
+-                    QFont font = var.value<QFont>();
+-                    font.setBold(true);
+-                    fontMetrics = QFontMetrics(font);
+-                }
+             }
+ 
+             QSize textRect = fontMetrics.boundingRect(groupBox->text).size() + QSize(4, 4);
+diff -ur qt-everywhere-opensource-src-5.5.0/qttools/src/assistant/assistant/helpviewer.h qt-everywhere-opensource-src-5.5.0-b/qttools/src/assistant/assistant/helpviewer.h
+--- qt-everywhere-opensource-src-5.5.0/qttools/src/assistant/assistant/helpviewer.h	2015-06-29 16:13:42.000000000 -0400
++++ qt-everywhere-opensource-src-5.5.0-b/qttools/src/assistant/assistant/helpviewer.h	2015-09-23 14:47:06.486215480 -0400
+@@ -142,7 +142,7 @@
+ private:
+     bool eventFilter(QObject *obj, QEvent *event);
+     void contextMenuEvent(QContextMenuEvent *event);
+-    QVariant loadResource(int type, const QUrl &name);
++//    QVariant loadResource(int type, const QUrl &name);
+     bool handleForwardBackwardMouseButtons(QMouseEvent *e);
+ 
+ private:
+diff -ur qt-everywhere-opensource-src-5.5.0/qttools/src/assistant/assistant/helpviewer_qwv.cpp qt-everywhere-opensource-src-5.5.0-b/qttools/src/assistant/assistant/helpviewer_qwv.cpp
+--- qt-everywhere-opensource-src-5.5.0/qttools/src/assistant/assistant/helpviewer_qwv.cpp	2015-06-29 16:13:42.000000000 -0400
++++ qt-everywhere-opensource-src-5.5.0-b/qttools/src/assistant/assistant/helpviewer_qwv.cpp	2015-09-23 14:40:41.575205984 -0400
+@@ -370,13 +370,7 @@
+ void HelpViewer::actionChanged()
+ {
+     TRACE_OBJ
+-    QAction *a = qobject_cast<QAction *>(sender());
+-    if (a == pageAction(QWebPage::Copy))
+-        emit copyAvailable(a->isEnabled());
+-    else if (a == pageAction(QWebPage::Back))
+-        emit backwardAvailable(a->isEnabled());
+-    else if (a == pageAction(QWebPage::Forward))
+-        emit forwardAvailable(a->isEnabled());
++    return;
+ }
+ 
+ // -- private

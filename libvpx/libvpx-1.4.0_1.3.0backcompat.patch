@@ -1,12 +1,15 @@
 Backwards compatibility patch for libvpx 1.3.0.
-Why they broke it - dunno. This resolves palemoon builds
-against a system libvpx 1.4.0.
+
+Why they broke it - dunno. This resolves Pale Moon builds
+against system libvpx 1.4.0, and allows things reliant
+on older definitions to still build.
 
 Also, remember to specify --size-limit=16384x16384 when
 configuring to avoid CVE-2015-1258.
 
 This can actually be applied to the system header without
-breaking compatibility ABI or API, if you care.
+breaking compatibility ABI or API, if you care. Viva la
+#defines.
 
 --- a/vpx/vpx_image.h	2015-09-10 18:56:56.745789978 -0400
 +++ b/vpx/vpx_image.h	2015-06-25 15:04:01.033448569 -0400

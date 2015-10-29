@@ -28,9 +28,13 @@ The default behavior is still to seed like it was before.
 If like me, you have an ISP who has 1/20th the
 upload speed of download speed, it may actually speed up
 downloads. It also means said ISP can't actually say you
-uploaded an ounce of data - you didn't. On the downside; 
+uploaded an ounce of data - you didn't. On the downside;
 you're not obeying torrent etiquette, so don't try this
 on a private tracker.
+
+This only disables seeding. It still will ask trackers
+and peers for data, and will still verify with peers.
+Data is still uploaded, just not any of the file itself.
 
 This patch is relatively uninvasive. I don't expect it to
 be upstreamed, though.

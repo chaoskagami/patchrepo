@@ -5,6 +5,8 @@ Everything in here is a patch meant to be applied to code. Some of these might b
 
 They either fix a bug, fix a build, or change functionality. Point is, I have a lot of them.
 
+I make every effort to slap documentation at the head of every patch, so read it.
+
 * aria2/
     * aria2-1.19.0-leech.patch
         * Adds a --disable-seed option. Does what you expect.
@@ -20,3 +22,6 @@ They either fix a bug, fix a build, or change functionality. Point is, I have a 
 * sdl/
     * sdl-xdata.patch
         * Fixes 'Undefined symbol _XData32' which occurs in some circumstances.
+* nss/
+    * nss-3.20.1-tls_ecdhe_camellia_gcm.patch
+        * Adds ECDHE-Camellia-GCM cipher suites to nss.
