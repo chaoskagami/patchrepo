@@ -25,3 +25,8 @@ I make every effort to slap documentation at the head of every patch, so read it
 * nss/
     * nss-3.20.1-tls_ecdhe_camellia_gcm.patch
         * Adds ECDHE-Camellia-GCM cipher suites to nss.
+* wine/
+    * wine-1.7.54-force-laa-exec.patch
+        * Environment var 'WINE_FORCE_LARGEADDR' can be set to force a binary to run as if the LAA flag is set. Useful for some games that need dll injection to fix otherwise.
+    * wine-1.7.54-mmap-higher-memory.patch
+        * Environment var 'WINE_HIGHER_USERSPACE_MMAP' can be set to do allocation mapping starting at a higher location.

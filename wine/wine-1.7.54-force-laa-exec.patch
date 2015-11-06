@@ -1,0 +1,19 @@
+This is based on a rather hacky patch. The only thing I did
+was rename the env var to make it more...human readable.
+
+diff -ur a/dlls/ntdll/virtual.c b/dlls/ntdll/virtual.c
+--- a/dlls/ntdll/virtual.c	2015-10-30 09:20:44.000000000 -0400
++++ b/dlls/ntdll/virtual.c	2015-11-02 19:28:50.920781965 -0500
+@@ -1844,8 +1844,11 @@
+ void virtual_set_large_address_space(void)
+ {
+     IMAGE_NT_HEADERS *nt = RtlImageNtHeader( NtCurrentTeb()->Peb->ImageBaseAddress );
++    const char* force_laa_str = getenv("WINE_FORCE_LARGEADDR");
++    int force_laa = (force_laa_str && *force_laa_str != '\0');
++    if (force_laa) FIXME("large address aware flag forced, don't report bugs\n");
+ 
+-    if (!(nt->FileHeader.Characteristics & IMAGE_FILE_LARGE_ADDRESS_AWARE)) return;
++    if (!force_laa && !(nt->FileHeader.Characteristics & IMAGE_FILE_LARGE_ADDRESS_AWARE)) return;
+     /* no large address space on win9x */
+     if (NtCurrentTeb()->Peb->OSPlatformId != VER_PLATFORM_WIN32_NT) return;
+ 
