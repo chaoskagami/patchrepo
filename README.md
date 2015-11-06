@@ -10,6 +10,7 @@ I make every effort to slap documentation at the head of every patch, so read it
 * aria2/
     * aria2-1.19.0-leech.patch
         * Adds a --disable-seed option. Does what you expect.
+        * Also applies on 1.19.1 and 1.19.2 with offset, and works.
 * wget/
     * wget-no-egd-libressl.patch
         * Removes reference to egd so libressl is usable.
