@@ -4644,56 +4644,6 @@ diff -urN wine-1.9.1/dlls/d3d9-nine/version.rc wine-1.9.1-staging+d3d9/dlls/d3d9
 +#define WINE_PRODUCTVERSION_STR "5.3.1.904"
 +
 +#include "wine/wine_common_ver.rc"
-diff -urN wine-1.9.1/dlls/ntdll/loadorder.c wine-1.9.1-staging+d3d9/dlls/ntdll/loadorder.c
---- wine-1.9.1/dlls/ntdll/loadorder.c	2016-01-18 06:51:05.362592514 -0500
-+++ wine-1.9.1-staging+d3d9/dlls/ntdll/loadorder.c	2016-01-18 06:33:43.833613767 -0500
-@@ -644,3 +644,46 @@
-     RtlFreeHeap( GetProcessHeap(), 0, module );
-     return ret;
- }
-+
-+
-+/***************************************************************************
-+ *  get_redirect   (internal)
-+ *
-+ * Return the redirect value of a module.
-+ * The system directory and '.dll' extension is stripped from the path.
-+ */
-+WCHAR* get_redirect( const WCHAR *app_name, const WCHAR *path, BYTE *buffer, ULONG size )
-+{
-+    WCHAR *ret = NULL;
-+    HANDLE std_key, app_key = 0;
-+    WCHAR *module, *basename;
-+
-+    std_key = get_redirect_standard_key();
-+    if (app_name) app_key = get_redirect_app_key( app_name );
-+
-+    TRACE("looking up redirection for %s\n", debugstr_w(path));
-+
-+    if (!(module = get_module_basename(path, &basename)))
-+        return ret;
-+
-+    /* first explicit module name */
-+    if ((ret = get_redirect_value( std_key, app_key, module+1, buffer, size )))
-+        goto done;
-+
-+    /* then module basename preceded by '*' */
-+    basename[-1] = '*';
-+    if ((ret = get_redirect_value( std_key, app_key, basename-1, buffer, size )))
-+        goto done;
-+
-+    /* then module basename without '*' (only if explicit path) */
-+    if (basename != module+1 && (ret = get_redirect_value( std_key, app_key, basename, buffer, size )))
-+        goto done;
-+
-+    /* and last the hard-coded default */
-+    ret = NULL;
-+    TRACE( "no redirection found for %s\n", debugstr_w(path) );
-+
-+ done:
-+    RtlFreeHeap( GetProcessHeap(), 0, module );
-+    return ret;
-+}
 diff -urN wine-1.9.1/dlls/winex11.drv/init.c wine-1.9.1-staging+d3d9/dlls/winex11.drv/init.c
 --- wine-1.9.1/dlls/winex11.drv/init.c	2016-01-18 06:51:03.053592561 -0500
 +++ wine-1.9.1-staging+d3d9/dlls/winex11.drv/init.c	2016-01-18 06:33:43.834613767 -0500
