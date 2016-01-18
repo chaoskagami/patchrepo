@@ -27,13 +27,17 @@ I make every effort to slap documentation at the head of every patch, so read it
         * Adds ECDHE-Camellia-GCM cipher suites to nss.
         * Pale Moon forces internal nss now, so this is of limited utility, but disabling the check with PM allows to build against a patched system-nss.
 * wine/
-    * wine-1.7.54-force-laa-exec.patch (works - 1.7.55)
+    * wine-1.7.54-force-laa-exec.patch (works - 1.9.1)
         * Environment var 'WINE_FORCE_LARGEADDR' can be set to force a binary to run as if the LAA flag is set. Useful for some games that need dll injection to fix otherwise.
-    * wine-1.7.54-mmap-higher-memory.patch (works - 1.7.55)
+    * wine-1.7.54-mmap-higher-memory.patch (works - 1.9.1)
         * Environment var 'WINE_HIGHER_USERSPACE_MMAP' can be set to do allocation mapping starting at a higher location.
-    * wine-1.7.54-opengl-hooking-allow.patch (works - 1.7.55)
+    * wine-1.7.54-opengl-hooking-allow.patch (works - 1.9.1)
         * WINE by default loads glSwapBuffers directly from libGL.so. This makes WINE use RTLD_NEXT so preloads can override glSwapBuffers.
     * All of the above are compatible with staging, too.
+    * wine-1.9.1-nine.patch
+        * This is the gallium nine state tracker from iXit/wine rebased onto 1.9.1 since NP-Hardass' tools cannot generate patches anymore. Read the patch header.
+    * wine-1.9.1-nine_for_staging.patch
+        * Again, nine state tracker. This is intended to be applied after staging and resolves a few conflicts not occuring otherwise.
 * gmpc/
     * gmpc-*-fix-annoyance.patch
         * Disables the annoying dialog when clearing the now playing queue. The average person clears now playing all the time. Seriously a design issue.
