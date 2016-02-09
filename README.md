@@ -8,7 +8,7 @@ They either fix a bug, fix a build, or change functionality. Point is, I have a 
 I make every effort to slap documentation at the head of every patch, so read it.
 
 * aria2/
-    * aria2-1.19.0-leech.patch (works with offsets - 1.19.3)
+    * aria2-1.19.0-leech.patch (works 1.19.3)
         * Adds a --disable-seed option. Does what you expect. Now you too can be a leech with a wonderful 0.0 seed ratio (pfft.) This is custom.
 * wget/
     * wget-no-egd-libressl.patch
@@ -27,17 +27,16 @@ I make every effort to slap documentation at the head of every patch, so read it
         * Adds ECDHE-Camellia-GCM cipher suites to nss.
         * Pale Moon forces internal nss now, so this is of limited utility, but disabling the check with PM allows to build against a patched system-nss.
 * wine/
-    * wine-1.7.54-force-laa-exec.patch (works - 1.9.1)
+    * wine-1.7.54-force-laa-exec.patch (works 1.9.3, w|wo staging)
         * Environment var 'WINE_FORCE_LARGEADDR' can be set to force a binary to run as if the LAA flag is set. Useful for some games that need dll injection to fix otherwise.
-    * wine-1.7.54-mmap-higher-memory.patch (works - 1.9.1)
+    * wine-1.7.54-mmap-higher-memory.patch (works 1.9.3, w|wo staging)
         * Environment var 'WINE_HIGHER_USERSPACE_MMAP' can be set to do allocation mapping starting at a higher location.
-    * wine-1.7.54-opengl-hooking-allow.patch (works - 1.9.1)
+    * wine-1.7.54-opengl-hooking-allow.patch (works 1.9.3, w|wo staging)
         * WINE by default loads glSwapBuffers directly from libGL.so. This makes WINE use RTLD_NEXT so preloads can override glSwapBuffers.
-    * All of the above are compatible with staging, too.
-    * wine-1.9.1-nine.patch
-        * This is the gallium nine state tracker from iXit/wine rebased onto 1.9.1 since NP-Hardass' tools cannot generate patches anymore. Read the patch header.
-    * wine-1.9.1-nine_for_staging.patch
+    * nine-staging-1.9.2.patch (works 1.9.2-1.9.3, vanilla)
+        * This is the gallium nine state tracker from iXit/wine as a patch for vanilla wine.
+    * nine-staging-1.9.2.patch (works 1.9.2-1.9.3, staging)
         * Again, nine state tracker. This is intended to be applied after staging and resolves a few conflicts not occuring otherwise.
 * gmpc/
-    * gmpc-*-fix-annoyance.patch
+    * gmpc-11.8.16-fix-annoyance.patch
         * Disables the annoying dialog when clearing the now playing queue. The average person clears now playing all the time. Seriously a design issue.
