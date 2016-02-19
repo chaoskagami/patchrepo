@@ -8,7 +8,8 @@ They either fix a bug, fix a build, or change functionality. Point is, I have a 
 I make every effort to slap documentation at the head of every patch, so read it.
 
 * aria2/
-    * aria2-1.19.0-leech.patch (works 1.19.3)
+    * aria2-1.19.0-leech.patch (works 1.19.*)
+    * aria2-1.20.0-leech.patch (works 1.20.0)
         * Adds a --disable-seed option. Does what you expect. Now you too can be a leech with a wonderful 0.0 seed ratio (pfft.) This is custom.
 * wget/
     * wget-no-egd-libressl.patch

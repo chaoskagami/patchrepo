@@ -1,0 +1,250 @@
+===========================================================
+Non-technical version:
+
+This adds an option to disable torrent seeding -
+'--disable-seed'.
+
+Apply this with 'patch -Np1'. You'll need to run
+'autoreconf -fi' prior to configure.
+
+Also, if you report bugs to aria2, make sure they
+know you applied this. If they say "can't help you"
+then try and repro without this and report it, and if it
+is with this patch only, report it here.
+===========================================================
+Technical version:
+
+This patch introduces another seed criteria class -
+NopeSeedCriteria, which always returns true, e.g. done
+seeding.
+
+It adds a config option '--disable-seed' to use this
+criteria to determine when done seeding a torrent.
+This option gets read before all of the other seed options,
+but if any seed prefs are specified, they will override
+this force-disable behavior.
+
+The default behavior is still to seed like it was before.
+
+If like me, you have an ISP who has 1/20th the
+upload speed of download speed, it may actually speed up
+downloads. It also means said ISP can't actually say you
+uploaded an ounce of data - you didn't. On the downside;
+you're not obeying torrent etiquette, so don't try this
+on a private tracker. It may even cause bans on public
+trackers. I don't know.
+
+This only disables seeding. It still will ask trackers
+and peers for data, and will still verify with peers.
+Data is still uploaded, just not any of the file itself.
+Therefore it will probably say that some data was uploaded
+in the range of kB to MB depending on how long the download
+took.
+
+This patch is relatively uninvasive. I don't expect it to
+be upstreamed, though.
+===========================================================
+diff -urN a/src/BtSetup.cc b/src/BtSetup.cc
+--- a/src/BtSetup.cc	2016-02-15 10:36:34.000000000 -0500
++++ b/src/BtSetup.cc	2016-02-19 16:16:49.176195909 -0500
+@@ -48,6 +48,7 @@
+ #include "PeerListenCommand.h"
+ #include "UnionSeedCriteria.h"
+ #include "TimeSeedCriteria.h"
++#include "NopeSeedCriteria.h"
+ #include "ShareRatioSeedCriteria.h"
+ #include "prefs.h"
+ #include "LogFactory.h"
+@@ -156,6 +157,11 @@
+   }
+   if (!metadataGetMode) {
+     auto unionCri = make_unique<UnionSeedCriteria>();
++    if(option->defined(PREF_SEED_DISABLE)) {
++      auto cdis = option->getAsBool(PREF_SEED_DISABLE);
++      if (cdis == true)
++        unionCri->addSeedCriteria(make_unique<NopeSeedCriteria>());
++    }
+     if (option->defined(PREF_SEED_TIME)) {
+       unionCri->addSeedCriteria(make_unique<TimeSeedCriteria>(
+           std::chrono::seconds(option->getAsInt(PREF_SEED_TIME) * 60)));
+diff -urN a/src/Makefile.am b/src/Makefile.am
+--- a/src/Makefile.am	2016-02-15 10:36:34.000000000 -0500
++++ b/src/Makefile.am	2016-02-19 16:14:07.422184627 -0500
+@@ -603,6 +603,7 @@
+ 	SeedCheckCommand.cc SeedCheckCommand.h\
+ 	SeedCriteria.h\
+ 	ShareRatioSeedCriteria.cc ShareRatioSeedCriteria.h\
++	NopeSeedCriteria.cc NopeSeedCriteria.h\
+ 	SimpleBtMessage.cc SimpleBtMessage.h\
+ 	TimeSeedCriteria.cc TimeSeedCriteria.h\
+ 	TrackerWatcherCommand.cc TrackerWatcherCommand.h\
+diff -urN a/src/NopeSeedCriteria.cc b/src/NopeSeedCriteria.cc
+--- a/src/NopeSeedCriteria.cc	1969-12-31 19:00:00.000000000 -0500
++++ b/src/NopeSeedCriteria.cc	2016-02-19 16:14:07.423184627 -0500
+@@ -0,0 +1,50 @@
++/* <!-- copyright */
++/*
++ * aria2 - The high speed download utility
++ *
++ * Copyright (C) 2010 Tatsuhiro Tsujikawa
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++ *
++ * In addition, as a special exception, the copyright holders give
++ * permission to link the code of portions of this program with the
++ * OpenSSL library under certain conditions as described in each
++ * individual source file, and distribute linked combinations
++ * including the two.
++ * You must obey the GNU General Public License in all respects
++ * for all of the code used other than OpenSSL.  If you modify
++ * file(s) with this exception, you may extend this exception to your
++ * version of the file(s), but you are not obligated to do so.  If you
++ * do not wish to do so, delete this exception statement from your
++ * version.  If you delete this exception statement from all source
++ * files in the program, then also delete it here.
++ */
++/* copyright --> */
++#include "NopeSeedCriteria.h"
++
++namespace aria2 {
++
++NopeSeedCriteria::NopeSeedCriteria() {}
++
++NopeSeedCriteria::~NopeSeedCriteria() {}
++
++void NopeSeedCriteria::reset() {}
++
++bool NopeSeedCriteria::evaluate()
++{
++  return true;
++}
++
++}
+diff -urN a/src/NopeSeedCriteria.h b/src/NopeSeedCriteria.h
+--- a/src/NopeSeedCriteria.h	1969-12-31 19:00:00.000000000 -0500
++++ b/src/NopeSeedCriteria.h	2016-02-19 16:14:07.423184627 -0500
+@@ -0,0 +1,55 @@
++/* <!-- copyright */
++/*
++ * aria2 - The high speed download utility
++ *
++ * Copyright (C) 2006 Tatsuhiro Tsujikawa
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++ *
++ * In addition, as a special exception, the copyright holders give
++ * permission to link the code of portions of this program with the
++ * OpenSSL library under certain conditions as described in each
++ * individual source file, and distribute linked combinations
++ * including the two.
++ * You must obey the GNU General Public License in all respects
++ * for all of the code used other than OpenSSL.  If you modify
++ * file(s) with this exception, you may extend this exception to your
++ * version of the file(s), but you are not obligated to do so.  If you
++ * do not wish to do so, delete this exception statement from your
++ * version.  If you delete this exception statement from all source
++ * files in the program, then also delete it here.
++ */
++/* copyright --> */
++#ifndef D_NOPE_SEED_CRITERIA_H
++#define D_NOPE_SEED_CRITERIA_H
++
++#include "SeedCriteria.h"
++
++namespace aria2 {
++
++class NopeSeedCriteria : public SeedCriteria {
++public:
++  NopeSeedCriteria();
++
++  virtual ~NopeSeedCriteria();
++
++  virtual void reset() CXX11_OVERRIDE;
++
++  virtual bool evaluate() CXX11_OVERRIDE;
++};
++
++} // namespace aria2
++
++#endif // D_NOPE_SEED_CRITERIA_H
+diff -urN a/src/OptionHandlerFactory.cc b/src/OptionHandlerFactory.cc
+--- a/src/OptionHandlerFactory.cc	2016-02-15 10:36:34.000000000 -0500
++++ b/src/OptionHandlerFactory.cc	2016-02-19 16:16:06.731192948 -0500
+@@ -1802,6 +1802,12 @@
+     handlers.push_back(op);
+   }
+   {
++    OptionHandler* op(new BooleanOptionHandler(
++        PREF_SEED_DISABLE, TEXT_SEED_DISABLE, A2_V_FALSE, OptionHandler::OPT_ARG));
++    op->addTag(TAG_BITTORRENT);
++    handlers.push_back(op);
++  }
++  {
+     OptionHandler* op(new LocalFilePathOptionHandler(
+         PREF_TORRENT_FILE, TEXT_TORRENT_FILE, NO_DEFAULT_VALUE, false, 'T'));
+     op->addTag(TAG_BASIC);
+diff -urN a/src/prefs.cc b/src/prefs.cc
+--- a/src/prefs.cc	2016-02-15 10:36:34.000000000 -0500
++++ b/src/prefs.cc	2016-02-19 16:14:07.424184627 -0500
+@@ -455,6 +455,8 @@
+ PrefPtr PREF_SELECT_FILE = makePref("select-file");
+ // values: 1*digit
+ PrefPtr PREF_SEED_TIME = makePref("seed-time");
++// values: true | false
++PrefPtr PREF_SEED_DISABLE = makePref("disable-seed");
+ // values: 1*digit ['.' [ 1*digit ] ]
+ PrefPtr PREF_SEED_RATIO = makePref("seed-ratio");
+ // values: 1*digit
+diff -urN a/src/prefs.h b/src/prefs.h
+--- a/src/prefs.h	2016-02-15 10:36:34.000000000 -0500
++++ b/src/prefs.h	2016-02-19 16:14:07.425184627 -0500
+@@ -412,6 +412,8 @@
+ extern PrefPtr PREF_SELECT_FILE;
+ // values: 1*digit
+ extern PrefPtr PREF_SEED_TIME;
++// values: true | false
++extern PrefPtr PREF_SEED_DISABLE;
+ // values: 1*digit ['.' [ 1*digit ] ]
+ extern PrefPtr PREF_SEED_RATIO;
+ // values: 1*digit
+diff -urN a/src/usage_text.h b/src/usage_text.h
+--- a/src/usage_text.h	2016-02-15 10:36:34.000000000 -0500
++++ b/src/usage_text.h	2016-02-19 16:14:07.426184627 -0500
+@@ -299,7 +299,12 @@
+ #define TEXT_SEED_TIME                                                  \
+   _(" --seed-time=MINUTES          Specify seeding time in minutes. Also see the\n" \
+     "                              --seed-ratio option.")
+-#define TEXT_SEED_RATIO                                                 \
++#define TEXT_SEED_DISABLE                                                  \
++  _(" --disable-seed               If no other seed time or ratio options are\n" \
++    "                              specified, this completely disables seeding\n" \
++    "                              of torrents. No data will be uploaded, and\n" \
++    "                              aria2 will exit immediately upon reaching 100%.")
++#define TEXT_SEED_RATIO \
+   _(" --seed-ratio=RATIO           Specify share ratio. Seed completed torrents\n" \
+     "                              until share ratio reaches RATIO.\n"  \
+     "                              You are strongly encouraged to specify equals or\n" \
